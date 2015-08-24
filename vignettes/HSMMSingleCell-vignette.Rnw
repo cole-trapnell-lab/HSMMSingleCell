@@ -1,0 +1,107 @@
+% \VignetteIndexEntry{HSMMSingleCell: A single-cell RNA-Seq study of differentiating human skeletal muscle myoblasts.} 
+% \VignetteEngine{knitr::knitr}
+% \VignetteDepends{} 
+% \VignettePackage{HSMMSingleCell}
+\documentclass[10pt,oneside]{article}
+
+\newcommand{\thetitle}{HSMMSingleCell: A single-cell RNA-Seq study of differentiating human skeletal muscle myoblasts}
+
+%\usepackage[pdftitle={\thetitle},pdfauthor={Wolfgang Huber}]{whbiocvignette}
+\usepackage{whbiocvignette}
+% \usepackage{times}
+%\usepackage{hyperref}
+%\usepackage{verbatim}
+%\usepackage{graphicx}
+%\usepackage{fancybox}
+%\usepackage{color}
+
+\title{\textsf{\textbf{\thetitle}}}
+\author{Cole Trapnell\\[1em]Harvard University,\\ Cambridge, Massachussetts, USA\\
+\texttt{cole@broadinstitute.org} \and
+Davide Cacchiarelli\\[1em]Harvard University,\\ Cambridge, Massachussetts, USA\\
+\texttt{davide@broadinstitute.org}}
+
+\begin{document}
+
+<<include=FALSE, eval=TRUE>>=
+library(Biobase)
+library(knitr)
+library(reshape2)
+library(ggplot2)
+@ %def
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\tableofcontents
+
+<<init_monocle, include=FALSE, cache=FALSE, eval=TRUE>>=
+library(monocle)
+data(HSMM)
+@ %def 
+
+\section{Introduction}
+
+Skeletal myoblasts undergo a well-characterized sequence of morphological and transcriptional changes during differentiation. 
+\section{Cell Culture and Sequencing}
+
+In this experiment, primary human skeletal muscle myoblasts (HSMM) were expanded under high mitogen conditions (GM) and then differentiated by switching to low-mitogen media (DM).  RNA-Seq libraries were sequenced from each of several hundred cells taken over a time-course of serum-induced differentiation. Between 49 and 77 cells were captured at each of four time points (0, 24, 48, 72 hours) following serum switch using the Fluidigm C1 microfluidic system. RNA from each cell was isolated and used to construct mRNA-Seq libraries, which were then sequenced to a depth of approximately 4 million reads per library, resulting in a complete gene expression profile for each cell. 
+
+
+For single-cell mRNA sequencing, dissociated cells were captured and processed with the C1 Single-Cell Auto Prep System (Fluidigm) following manufacturer's protocol 100-5950.  
+Starting with a suspension of cells at a concentration of approximately 250 cells per microliter, up to 96 single cells are captured in each C1 microfluidic device. 
+In this study, we used one C1 capture chip at 0, 24, 48, and 72 hours after switching to differentiation medium, for a total of four independent captures. 
+After imaging with a microscope to identify which sites have captured a single cell, processing of the cells occurs within the C1 instrument to perform the steps of cell lysis, cDNA synthesis with reverse transcriptase, and PCR amplification of each cDNA library.  
+The cDNA synthesis and PCR use reagents from the SMARTer Ultra Low RNA Kit for Illumina Sequencing (Clontech 634936).  
+The SMARTer chemistry utilizes a strand-switching mechanism so that both the 1st and 2nd strands of cDNA are synthesized in a single reaction.  Following harvest from the C1 microfluidic device, each cDNA library is subjected to tagmentation (simultaneous fragmentation and tagging with sequencing adapters) using the Nextera XT DNA Sample Preparation Kit (Illumina FC-131-1096) as described in Fluidigm protocol 100-5950.  
+PCR amplification of the tagmented cDNA uses Index Primers from the Nextera XT DNA Sample Preparation Index Kit (Illumina FC-131-1002).  
+Following PCR, the cDNA libraries from individual cells are pooled and purified using AMPure XP beads (Agencourt Bioscience Corp A63880) as described in Fluidigm protocol 100-5950.
+Libraries that contained fewer than 1 million reads or for which less than 80\% of fragments mapped to non-mitochondrial protein coding genes were excluded.
+
+\section{Estimating expression levels}
+Per-cell expression profiles were calculated in this study using the Tuxedo suite of tools\cite{Trapnell:2012kp}. The reads for each cell were mapped with TopHat\cite{Kim:2013eo} 2.0.9 and Bowtie\cite{Langmead:2012jh} 2.0.6 against build 19 of the human genome, downloaded through the UCSC genome browser. TopHat was provided with GENCODE\cite{Harrow:2006ee} gene annotations (build version 17). Mapped reads were analyzed with Cuffdiff\cite{Trapnell:2012gg} 2.2 to generate per-cell expression profiles. 
+
+\section{The HSMM dataset}
+Gene expression values for each cell are stored in the \Robject{HSMM} object, which is a \Robject{CellDataSet}, as defined by \Rpackage{monocle}. To load the data, simply run the command below:
+<<load_HSMM, eval=TRUE>>=
+data(HSMM)
+@ %def 
+
+Because CellDataSet is based on Bioconductor's \Robject{ExpressionSet} class, CellDataSet inherits much of ExpressionSet's functionality.  For example, you can quickly see how many features (i.e. genes) and samples (i.e. cells) are included in the dataset:
+<<show_HSMM_details, eval=TRUE>>=
+HSMM
+@ %def 
+Each CellDataSet includes expression levels, along with metadata about cells and genes.  You can view metadata for cells as follows:
+<<show_HSMM_pData, eval=TRUE>>=
+head(pData(HSMM))
+@ %def 
+
+
+<<show_HSMM_fData, eval=TRUE>>=
+head(fData(HSMM))
+@ %def 
+
+
+\section{Further analysis}
+
+\section{Citation}
+If you use Monocle to analyze your experiments, please cite:
+<<citation, eval=TRUE>>=
+citation("HSMMSingleCell")
+@ %def 
+
+\section{Acknowledgements}
+
+Monocle was built by Cole Trapnell and Davide Cacchiarelli, with substantial design input John Rinn and Tarjei Mikkelsen. We are grateful to Sharif Bordbar, Chris Zhu, Amy Wagers and the Broad RNAi platform for technical assistance, and Magali Soumillon for helpful discussions. Cole Trapnell is a Damon Runyon Postdoctoral Fellow. Davide Cacchiarelli is a Human Frontier Science Program Fellow. Cacchiarelli and Mikkelsen were supported by the Harvard Stem Cell Institute. John Rinn is the Alvin and Esta Star Associate Professor. This work was supported by NIH grants 1DP2OD00667, P01GM099117, and P50HG006193-01. This work was also supported in part by the Single Cell Genomics initiative, a collaboration between the Broad Institute and Fluidigm Inc. This vignette was created from Wolfgang Huber's Bioconductor vignette style document, and patterned after the vignette for \Rpackage{DESeq}, by Simon Anders and Wolfgang Huber.
+
+\section{Session Info}
+<<sessi>>=
+sessionInfo()
+@
+
+\bibliographystyle{unsrt}
+\bibliography{monocle_alg}
+
+\end{document}
